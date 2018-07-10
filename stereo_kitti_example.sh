@@ -1,1 +1,2 @@
-./Examples/Stereo/stereo_kitti Vocabulary/ORBvoc.txt Examples/Stereo/KITTI00-02.yaml /home/pan/Datasets/kitti/data_odometry_gray/00
+./Examples/Stereo/stereo_kitti Vocabulary/ORBvoc.txt Examples/Stereo/KITTI00-02.yaml ~/Dataset/data_odometry_gray/sequences/01
+

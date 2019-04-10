@@ -68,8 +68,7 @@ void Optimizer::BundleAdjustment(const vector<KeyFrame *> &vpKFs, const vector<M
     long unsigned int maxKFid = 0;
 
     // Set KeyFrame vertices
-    for(size_t i=0; i<vpKFs.size(); i++)
-    {
+    for(size_t i=0; i<vpKFs.size(); i++){
         KeyFrame* pKF = vpKFs[i];
         if(pKF->isBad())
             continue;

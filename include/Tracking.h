@@ -105,8 +105,8 @@ public:
 
     // Lists used to recover the full camera trajectory at the end of the execution.
     // Basically we store the reference keyframe for each frame and its relative transformation
-    list<cv::Mat> mlRelativeFramePoses;
-    list<KeyFrame*> mlpReferences;
+    list<cv::Mat> mlRelativeFramePoses;		// TODO 
+    list<KeyFrame*> mlpReferences;		// TODO
     list<double> mlFrameTimes;
     list<bool> mlbLost;
 
@@ -165,7 +165,7 @@ protected:
     // Initalization (only for monocular)
     Initializer* mpInitializer;
 
-    //Local Map
+    //Local Map // TODO 
     KeyFrame* mpReferenceKF;
     std::vector<KeyFrame*> mvpLocalKeyFrames;
     std::vector<MapPoint*> mvpLocalMapPoints;
@@ -202,7 +202,7 @@ protected:
     int mnMatchesInliers;
 
     //Last Frame, KeyFrame and Relocalisation Info
-    KeyFrame* mpLastKeyFrame;
+    KeyFrame* mpLastKeyFrame; // TODO
     Frame mLastFrame;
     unsigned int mnLastKeyFrameId;
     unsigned int mnLastRelocFrameId;
@@ -213,7 +213,7 @@ protected:
     //Color order (true RGB, false BGR, ignored if grayscale)
     bool mbRGB;
 
-    list<MapPoint*> mlpTemporalPoints;
+    list<MapPoint*> mlpTemporalPoints; // TODO
 };
 
 } //namespace ORB_SLAM

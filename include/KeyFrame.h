@@ -32,16 +32,14 @@
 #include <mutex>
 
 
-namespace ORB_SLAM2
-{
+namespace ORB_SLAM2 {
 
 class Map;
 class MapPoint;
 class Frame;
 class KeyFrameDatabase;
 
-class KeyFrame
-{
+class KeyFrame {
 public:
     KeyFrame(Frame &F, Map* pMap, KeyFrameDatabase* pKFDB);
 

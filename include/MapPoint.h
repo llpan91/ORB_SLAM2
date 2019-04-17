@@ -95,7 +95,7 @@ public:
     bool mbTrackInView;
     int mnTrackScaleLevel;
     float mTrackViewCos;
-    long unsigned int mnTrackReferenceForFrame;
+    long unsigned int mnTrackReferenceForFrame;	// TODO 
     long unsigned int mnLastFrameSeen;
 
     // Variables used by local mapping
@@ -108,7 +108,6 @@ public:
     long unsigned int mnCorrectedReference;    
     cv::Mat mPosGBA;
     long unsigned int mnBAGlobalForKF;
-
 
     static std::mutex mGlobalMutex;
 

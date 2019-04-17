@@ -62,6 +62,8 @@
 
 #include "ORBextractor.h"
 
+#include <iostream>
+#include <cmath>
 
 using namespace cv;
 using namespace std;
@@ -420,6 +422,9 @@ ORBextractor::ORBextractor(int _nfeatures, float _scaleFactor, int _nlevels,
     {
         mvScaleFactor[i]=mvScaleFactor[i-1]*scaleFactor;
         mvLevelSigma2[i]=mvScaleFactor[i]*mvScaleFactor[i];
+// 	std::cout << "mvLevelSigma2[" << i << "] = " << mvLevelSigma2[i] << std::endl;
+// 	float value = pow(1.2, i) * pow(1.2, i);
+// 	std::cout << "value = " << value << std::endl;
     }
 
     mvInvScaleFactor.resize(nlevels);

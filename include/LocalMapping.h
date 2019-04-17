@@ -70,6 +70,7 @@ class LocalMapping {
   }
 
  protected:
+   
   bool CheckNewKeyFrames();
   void ProcessNewKeyFrame();
   void CreateNewMapPoints();

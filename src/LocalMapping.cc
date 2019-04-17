@@ -48,26 +48,21 @@ void LocalMapping::Run() {
 
   while (1) {
     // Tracking will see that Local Mapping is busy
-    SetAcceptKeyFrames(false);
+    SetAcceptKeyFrames(false);	// mbAcceptKeyFrames = false ??
 
     // Check if there are keyframes in the queue
-    if (CheckNewKeyFrames()) {
+    if (CheckNewKeyFrames()) {	
       // BoW conversion and insertion in Map
       ProcessNewKeyFrame();
-
       // Check recent MapPoints
       MapPointCulling();
-
       // Triangulate new MapPoints
       CreateNewMapPoints();
-
       if (!CheckNewKeyFrames()) {
         // Find more matches in neighbor keyframes and fuse point duplications
         SearchInNeighbors();
       }
-
       mbAbortBA = false;
-
       if (!CheckNewKeyFrames() && !stopRequested()) {
         // Local BA
         if (mpMap->KeyFramesInMap() > 2)
@@ -152,10 +147,8 @@ void LocalMapping::MapPointCulling() {
   const unsigned long int nCurrentKFid = mpCurrentKeyFrame->mnId;
 
   int nThObs;
-  if (mbMonocular)
-    nThObs = 2;
-  else
-    nThObs = 3;
+  if (mbMonocular)    nThObs = 2;
+  else    nThObs = 3;
   const int cnThObs = nThObs;
 
   while (lit != mlpRecentAddedMapPoints.end()) {
@@ -165,7 +158,8 @@ void LocalMapping::MapPointCulling() {
     } else if (pMP->GetFoundRatio() < 0.25f) {
       pMP->SetBadFlag();
       lit = mlpRecentAddedMapPoints.erase(lit);
-    } else if (((int)nCurrentKFid - (int)pMP->mnFirstKFid) >= 2 && pMP->Observations() <= cnThObs) {
+    }	// why ??
+    else if (((int)nCurrentKFid - (int)pMP->mnFirstKFid) >= 2 && pMP->Observations() <= cnThObs) {
       pMP->SetBadFlag();
       lit = mlpRecentAddedMapPoints.erase(lit);
     } else if (((int)nCurrentKFid - (int)pMP->mnFirstKFid) >= 3)

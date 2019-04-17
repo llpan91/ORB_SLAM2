@@ -25,7 +25,10 @@
 #include "KeyFrame.h"
 #include "MapPoint.h"
 
+#include <vector>
 #include <mutex>
+
+using namespace std;
 
 namespace ORB_SLAM2 {
 

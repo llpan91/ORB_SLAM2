@@ -25,8 +25,11 @@
 #include "KeyFrame.h"
 #include "Map.h"
 
+#include <map>
 #include <mutex>
 #include <opencv2/core/core.hpp>
+
+using namespace std;
 
 namespace ORB_SLAM2 {
 

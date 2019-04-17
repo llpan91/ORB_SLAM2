@@ -1076,8 +1076,9 @@ void Tracking::UpdateLocalKeyFrames() {
       MapPoint *pMP = mCurrentFrame.mvpMapPoints[i];
       if (!pMP->isBad()) {
         const map<KeyFrame *, size_t> observations = pMP->GetObservations();
-        for (map<KeyFrame *, size_t>::const_iterator it = observations.begin(), 
-	  itend = observations.end(); it != itend; it++)
+        for (map<KeyFrame *, size_t>::const_iterator it = observations.begin(),
+                                                     itend = observations.end();
+             it != itend; it++)
           keyframeCounter[it->first]++;
       } else {
         mCurrentFrame.mvpMapPoints[i] = NULL;

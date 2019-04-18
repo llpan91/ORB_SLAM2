@@ -553,6 +553,7 @@ int ORBmatcher::SearchByBoW(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint *> &
   return nmatches;
 }
 
+// Triangulation point which both kf1 and kf2 have no depth yet;
 int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F12,
                                        vector<pair<size_t, size_t> > &vMatchedPairs,
                                        const bool bOnlyStereo) {
@@ -565,6 +566,7 @@ int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F
   cv::Mat t2w = pKF2->GetTranslation();
   cv::Mat C2 = R2w * Cw + t2w;
   const float invz = 1.0f / C2.at<float>(2);
+  // TODO
   const float ex = pKF2->fx * C2.at<float>(0) * invz + pKF2->cx;
   const float ey = pKF2->fy * C2.at<float>(1) * invz + pKF2->cy;
 
@@ -590,46 +592,33 @@ int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F
     if (f1it->first == f2it->first) {
       for (size_t i1 = 0, iend1 = f1it->second.size(); i1 < iend1; i1++) {
         const size_t idx1 = f1it->second[i1];
-
         MapPoint *pMP1 = pKF1->GetMapPoint(idx1);
-
-        // If there is already a MapPoint skip
-        if (pMP1) continue;
-
-        const bool bStereo1 = pKF1->mvuRight[idx1] >= 0;
+        
+        if (pMP1) continue;	// If there is already a MapPoint skip
+        const bool bStereo1 = pKF1->mvuRight[idx1] >= 0; // stereo or rgb-d version
 
         if (bOnlyStereo)
-          if (!bStereo1) continue;
+          if (!bStereo1) continue;	// if pKF1[idx1] have no Effective depth
 
         const cv::KeyPoint &kp1 = pKF1->mvKeysUn[idx1];
-
         const cv::Mat &d1 = pKF1->mDescriptors.row(idx1);
-
         int bestDist = TH_LOW;
         int bestIdx2 = -1;
 
         for (size_t i2 = 0, iend2 = f2it->second.size(); i2 < iend2; i2++) {
           size_t idx2 = f2it->second[i2];
-
           MapPoint *pMP2 = pKF2->GetMapPoint(idx2);
-
           // If we have already matched or there is a MapPoint skip
           if (vbMatched2[idx2] || pMP2) continue;
-
           const bool bStereo2 = pKF2->mvuRight[idx2] >= 0;
-
           if (bOnlyStereo)
-            if (!bStereo2) continue;
-
+            if (!bStereo2) continue;		// if pKF2[idx2] have no Effective depth
           const cv::Mat &d2 = pKF2->mDescriptors.row(idx2);
-
           const int dist = DescriptorDistance(d1, d2);
-
           if (dist > TH_LOW || dist > bestDist) continue;
-
           const cv::KeyPoint &kp2 = pKF2->mvKeysUn[idx2];
 
-          if (!bStereo1 && !bStereo2) {
+          if (!bStereo1 && !bStereo2) {	// both pKF1[idx1] and pKF2[idx2] have no Effective depth
             const float distex = ex - kp2.pt.x;
             const float distey = ey - kp2.pt.y;
             if (distex * distex + distey * distey < 100 * pKF2->mvScaleFactors[kp2.octave])
@@ -705,36 +694,27 @@ int ORBmatcher::Fuse(KeyFrame *pKF, const vector<MapPoint *> &vpMapPoints, const
   const float &bf = pKF->mbf;
 
   cv::Mat Ow = pKF->GetCameraCenter();
-
   int nFused = 0;
-
   const int nMPs = vpMapPoints.size();
 
   for (int i = 0; i < nMPs; i++) {
     MapPoint *pMP = vpMapPoints[i];
-
     if (!pMP) continue;
-
     if (pMP->isBad() || pMP->IsInKeyFrame(pKF)) continue;
-
     cv::Mat p3Dw = pMP->GetWorldPos();
     cv::Mat p3Dc = Rcw * p3Dw + tcw;
 
     // Depth must be positive
     if (p3Dc.at<float>(2) < 0.0f) continue;
-
     const float invz = 1 / p3Dc.at<float>(2);
     const float x = p3Dc.at<float>(0) * invz;
     const float y = p3Dc.at<float>(1) * invz;
-
     const float u = fx * x + cx;
     const float v = fy * y + cy;
 
     // Point must be inside the image
     if (!pKF->IsInImage(u, v)) continue;
-
     const float ur = u - bf * invz;
-
     const float maxDistance = pMP->GetMaxDistanceInvariance();
     const float minDistance = pMP->GetMinDistanceInvariance();
     cv::Mat PO = p3Dw - Ow;
@@ -742,37 +722,25 @@ int ORBmatcher::Fuse(KeyFrame *pKF, const vector<MapPoint *> &vpMapPoints, const
 
     // Depth must be inside the scale pyramid of the image
     if (dist3D < minDistance || dist3D > maxDistance) continue;
-
     // Viewing angle must be less than 60 deg
     cv::Mat Pn = pMP->GetNormal();
-
     if (PO.dot(Pn) < 0.5 * dist3D) continue;
-
     int nPredictedLevel = pMP->PredictScale(dist3D, pKF);
-
     // Search in a radius
     const float radius = th * pKF->mvScaleFactors[nPredictedLevel];
-
     const vector<size_t> vIndices = pKF->GetFeaturesInArea(u, v, radius);
-
     if (vIndices.empty()) continue;
 
     // Match to the most similar keypoint in the radius
-
     const cv::Mat dMP = pMP->GetDescriptor();
 
     int bestDist = 256;
     int bestIdx = -1;
-    for (vector<size_t>::const_iterator vit = vIndices.begin(), vend = vIndices.end(); vit != vend;
-         vit++) {
+    for (vector<size_t>::const_iterator vit = vIndices.begin(), vend = vIndices.end(); vit != vend; vit++) {
       const size_t idx = *vit;
-
       const cv::KeyPoint &kp = pKF->mvKeysUn[idx];
-
       const int &kpLevel = kp.octave;
-
       if (kpLevel < nPredictedLevel - 1 || kpLevel > nPredictedLevel) continue;
-
       if (pKF->mvuRight[idx] >= 0) {
         // Check reprojection error in stereo
         const float &kpx = kp.pt.x;
@@ -790,20 +758,15 @@ int ORBmatcher::Fuse(KeyFrame *pKF, const vector<MapPoint *> &vpMapPoints, const
         const float ex = u - kpx;
         const float ey = v - kpy;
         const float e2 = ex * ex + ey * ey;
-
         if (e2 * pKF->mvInvLevelSigma2[kpLevel] > 5.99) continue;
       }
-
       const cv::Mat &dKF = pKF->mDescriptors.row(idx);
-
       const int dist = DescriptorDistance(dMP, dKF);
-
       if (dist < bestDist) {
         bestDist = dist;
         bestIdx = idx;
       }
     }
-
     // If there is already a MapPoint replace otherwise add new measurement
     if (bestDist <= TH_LOW) {
       MapPoint *pMPinKF = pKF->GetMapPoint(bestIdx);
@@ -821,12 +784,10 @@ int ORBmatcher::Fuse(KeyFrame *pKF, const vector<MapPoint *> &vpMapPoints, const
       nFused++;
     }
   }
-
   return nFused;
 }
 
-int ORBmatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &vpPoints, float th,
-                     vector<MapPoint *> &vpReplacePoint) {
+int ORBmatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &vpPoints, float th, vector<MapPoint *> &vpReplacePoint) {
   // Get Calibration Parameters for later projection
   const float &fx = pKF->fx;
   const float &fy = pKF->fy;
@@ -842,24 +803,17 @@ int ORBmatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &vpPoi
 
   // Set of MapPoints already found in the KeyFrame
   const set<MapPoint *> spAlreadyFound = pKF->GetMapPoints();
-
   int nFused = 0;
-
   const int nPoints = vpPoints.size();
-
   // For each candidate MapPoint project and match
   for (int iMP = 0; iMP < nPoints; iMP++) {
     MapPoint *pMP = vpPoints[iMP];
-
     // Discard Bad MapPoints and already found
     if (pMP->isBad() || spAlreadyFound.count(pMP)) continue;
-
     // Get 3D Coords.
     cv::Mat p3Dw = pMP->GetWorldPos();
-
     // Transform into Camera Coords.
     cv::Mat p3Dc = Rcw * p3Dw + tcw;
-
     // Depth must be positive
     if (p3Dc.at<float>(2) < 0.0f) continue;
 
@@ -867,7 +821,6 @@ int ORBmatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &vpPoi
     const float invz = 1.0 / p3Dc.at<float>(2);
     const float x = p3Dc.at<float>(0) * invz;
     const float y = p3Dc.at<float>(1) * invz;
-
     const float u = fx * x + cx;
     const float v = fy * y + cy;
 
@@ -879,46 +832,31 @@ int ORBmatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &vpPoi
     const float minDistance = pMP->GetMinDistanceInvariance();
     cv::Mat PO = p3Dw - Ow;
     const float dist3D = cv::norm(PO);
-
     if (dist3D < minDistance || dist3D > maxDistance) continue;
-
     // Viewing angle must be less than 60 deg
     cv::Mat Pn = pMP->GetNormal();
-
     if (PO.dot(Pn) < 0.5 * dist3D) continue;
-
     // Compute predicted scale level
     const int nPredictedLevel = pMP->PredictScale(dist3D, pKF);
-
     // Search in a radius
     const float radius = th * pKF->mvScaleFactors[nPredictedLevel];
-
     const vector<size_t> vIndices = pKF->GetFeaturesInArea(u, v, radius);
-
     if (vIndices.empty()) continue;
-
     // Match to the most similar keypoint in the radius
-
     const cv::Mat dMP = pMP->GetDescriptor();
-
     int bestDist = INT_MAX;
     int bestIdx = -1;
     for (vector<size_t>::const_iterator vit = vIndices.begin(); vit != vIndices.end(); vit++) {
       const size_t idx = *vit;
       const int &kpLevel = pKF->mvKeysUn[idx].octave;
-
       if (kpLevel < nPredictedLevel - 1 || kpLevel > nPredictedLevel) continue;
-
       const cv::Mat &dKF = pKF->mDescriptors.row(idx);
-
       int dist = DescriptorDistance(dMP, dKF);
-
       if (dist < bestDist) {
         bestDist = dist;
         bestIdx = idx;
       }
     }
-
     // If there is already a MapPoint replace otherwise add new measurement
     if (bestDist <= TH_LOW) {
       MapPoint *pMPinKF = pKF->GetMapPoint(bestIdx);
@@ -931,7 +869,6 @@ int ORBmatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &vpPoi
       nFused++;
     }
   }
-
   return nFused;
 }
 

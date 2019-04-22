@@ -187,6 +187,8 @@ void LocalMapping::CreateNewMapPoints() {
   const float &invfy1 = mpCurrentKeyFrame->invfy;
 
   const float ratioFactor = 1.5f * mpCurrentKeyFrame->mfScaleFactor;
+  // std::cout << "mfScaleFactor = " << mpCurrentKeyFrame->mfScaleFactor << std::endl;
+  // std::cout << " ratioFactor = " << ratioFactor << std::endl;
 
   int nnew = 0;
 

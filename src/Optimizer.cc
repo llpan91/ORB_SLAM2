@@ -341,15 +341,9 @@ int Optimizer::PoseOptimization(Frame* pFrame) {
     nBad = 0;
     for (size_t i = 0, iend = vpEdgesMono.size(); i < iend; i++) {
       g2o::EdgeSE3ProjectXYZOnlyPose* e = vpEdgesMono[i];
-
       const size_t idx = vnIndexEdgeMono[i];
-
-      if (pFrame->mvbOutlier[idx]) {
-        e->computeError();
-      }
-
+      if (pFrame->mvbOutlier[idx]) { e->computeError();}
       const float chi2 = e->chi2();
-
       if (chi2 > chi2Mono[it]) {
         pFrame->mvbOutlier[idx] = true;
         e->setLevel(1);
@@ -358,21 +352,14 @@ int Optimizer::PoseOptimization(Frame* pFrame) {
         pFrame->mvbOutlier[idx] = false;
         e->setLevel(0);
       }
-
       if (it == 2) e->setRobustKernel(0);
     }
-
+    
     for (size_t i = 0, iend = vpEdgesStereo.size(); i < iend; i++) {
       g2o::EdgeStereoSE3ProjectXYZOnlyPose* e = vpEdgesStereo[i];
-
       const size_t idx = vnIndexEdgeStereo[i];
-
-      if (pFrame->mvbOutlier[idx]) {
-        e->computeError();
-      }
-
+      if (pFrame->mvbOutlier[idx]) { e->computeError();}
       const float chi2 = e->chi2();
-
       if (chi2 > chi2Stereo[it]) {
         pFrame->mvbOutlier[idx] = true;
         e->setLevel(1);
@@ -381,10 +368,8 @@ int Optimizer::PoseOptimization(Frame* pFrame) {
         e->setLevel(0);
         pFrame->mvbOutlier[idx] = false;
       }
-
       if (it == 2) e->setRobustKernel(0);
     }
-
     if (optimizer.edges().size() < 10) break;
   }
 

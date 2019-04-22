@@ -577,9 +577,14 @@ float KeyFrame::ComputeSceneMedianDepth(const int q) {
 
   vector<float> vDepths;
   vDepths.reserve(N);
+  std::cout << "===========================" << std::endl;
+  std::cout << "Tcw_ = " << Tcw_ << std::endl;
   cv::Mat Rcw2 = Tcw_.row(2).colRange(0, 3);
+  std::cout << "Rcw2 = " << Rcw2 << std::endl;
   Rcw2 = Rcw2.t();
+  std::cout << "Rcw2 = " << Rcw2 << std::endl;
   float zcw = Tcw_.at<float>(2, 3);
+  std::cout << "zcw = " << zcw << std::endl;
   for (int i = 0; i < N; i++) {
     if (mvpMapPoints[i]) {
       MapPoint *pMP = mvpMapPoints[i];

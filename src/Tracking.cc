@@ -719,6 +719,8 @@ void Tracking::UpdateLastFrame() {
 
     if (vDepthIdx[j].first > mThDepth && nPoints > 100) break;
   }
+  std::cout << "mlpTemporalPoints size = " << mlpTemporalPoints.size() << std::endl;
+  std::cout << "After updateLastFrame nPoints = " << nPoints << std::endl;
 }
 
 bool Tracking::TrackWithMotionModel() {
@@ -740,12 +742,12 @@ bool Tracking::TrackWithMotionModel() {
   int nmatches =
       matcher.SearchByProjection(mCurrentFrame, mLastFrame, th, mSensor == System::MONOCULAR);
 
-  std::cout << "test " << std::endl;
-  int idx = 0;
-  for(int i = 0; i < mCurrentFrame.N; i++){
-    if(mCurrentFrame.mvpMapPoints[i]) idx++;
-  }
-  std::cout << "idx = " << idx << std::endl;
+  // std::cout << "test " << std::endl;
+  // int idx = 0;
+  // for(int i = 0; i < mCurrentFrame.N; i++){
+  //  if(mCurrentFrame.mvpMapPoints[i]) idx++;
+  //}
+  // std::cout << "idx = " << idx << std::endl;
       
   // If few matches, uses a wider window search
   if (nmatches < 20) {
@@ -776,7 +778,7 @@ bool Tracking::TrackWithMotionModel() {
         nmatchesMap++;
     }
   }
-  std::cout << "TrackWithMotionModel debug nmatchesMap = " << nmatchesMap << std::endl;
+  // std::cout << "TrackWithMotionModel debug nmatchesMap = " << nmatchesMap << std::endl;
   if (mbOnlyTracking) {
     mbVO = nmatchesMap < 10;
     return nmatches > 20;
